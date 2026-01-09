@@ -9,7 +9,18 @@ namespace Attendees
     {
         public void WriteToDirectory(ZipArchiveEntry entry, string destDirectory)
         {
-            string destFileName = Path.Combine(destDirectory, entry.FullName);
+            // Combine the destination directory with the entry name and resolve to a full path
+            string destFileName = Path.GetFullPath(Path.Combine(destDirectory, entry.FullName));
+
+            // Resolve the destination directory to a full path (ensure it ends with a separator)
+            string fullDestDirPath = Path.GetFullPath(destDirectory + Path.DirectorySeparatorChar);
+
+            // Prevent Zip Slip by ensuring the destination file is within the destination directory
+            if (!destFileName.StartsWith(fullDestDirPath, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Entry is outside the target dir: " + destFileName);
+            }
+
             entry.ExtractToFile(destFileName);
         }
         
